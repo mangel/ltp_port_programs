@@ -27,8 +27,9 @@
 
 #define TURN_OFF_SIGNAL 0
 
-#define MAX_SIGNAL_VALUE 128
+#define MAX_SIGNAL_VALUE 127
 
+#define EFFECTS_DELAY_IN_MILLISECONDS 100
 
 void turn_off_leds(const int ltp_port);
 
@@ -70,7 +71,7 @@ void pre_init()
 	#ifdef WINDOWS
 	clrscr();
 	#endif
-	
+
 	srand( time( NULL ));
 }
 
@@ -154,10 +155,10 @@ void turn_off_leds(const int ltp_port_address)
 }
 
 void perform_simple_effect()
-{	
+{
 	int signal = 1;
 	int prev_signal = 0;
-	
+
 	do
 	{
 		send_signal(signal);
@@ -165,7 +166,11 @@ void perform_simple_effect()
 		prev_signal = signal;
 
 		signal = (signal << 1) | prev_signal;
-	} 
+
+		#ifdef WINDOWS
+		delay(EFFECTS_DELAY_IN_MILLISECONDS);
+		#endif
+	}
 	while(signal <= MAX_SIGNAL_VALUE);
 }
 
@@ -180,7 +185,11 @@ void perform_double_effect()
 		send_signal(signal);
 
 		signal = signal * 2;
-	} 
+
+		#ifdef WINDOWS
+		delay(EFFECTS_DELAY_IN_MILLISECONDS);
+		#endif
+	}
 	while(signal <= MAX_SIGNAL_VALUE);
 }
 
@@ -197,27 +206,27 @@ void perform_x_effect()
 	int a = X_EFFECT_MIN;
 	int b = X_EFFECT_MAX;
 
-	int half_cycles = 0;
-
 	do
 	{
 		signal = a | b;
 
 		if (a == b)
-			signal = 8;
+			signal = X_EFFECT_MID;
 
 		send_signal(signal);
 
 		a = a << 1;
 		b = b >> 1;
-	} 
+
+		#ifdef WINDOWS
+		delay(EFFECTS_DELAY_IN_MILLISECONDS);
+		#endif
+	}
 	while (a <= X_EFFECT_MAX && b >= X_EFFECT_MIN);
 }
 
 void perform_shadow_effect()
 {
-	const int SHADOW_EFFECT_MIN_SIGNAL = 63;
-
 	printl("Efecto Sombra");
 
 	int signal = 127;
@@ -230,6 +239,10 @@ void perform_shadow_effect()
 		temp = temp * 2;
 
 		signal = (MAX_SIGNAL_VALUE-1) ^ temp;
+
+		#ifdef WINDOWS
+		delay(EFFECTS_DELAY_IN_MILLISECONDS);
+		#endif
 	}
 	while(signal <= MAX_SIGNAL_VALUE);
 }
@@ -238,13 +251,13 @@ void perform_kitt_effect()
 {
 	const int KITT_EFFECT_MIN_SIGNAL_VALUE = 1;
 	const int KITT_EFFECT_MAX_CYCLES = 3;
-	
+
 	printl("Efecto KITT (El auto fantastico)");
 
-	int signal  = 1;
+	int signal  = KITT_EFFECT_MIN_SIGNAL_VALUE;
 	int cycles  = 0;
 	int reverse = 0;
-	
+
 	do
 	{
 		send_signal(signal);
@@ -255,52 +268,60 @@ void perform_kitt_effect()
 			signal = signal >> 1;
 
 		if (signal >= MAX_SIGNAL_VALUE)
+		{
 			reverse = 1;
+			signal = signal >> 2;
+		}
 		else if (reverse == 1 && signal == KITT_EFFECT_MIN_SIGNAL_VALUE)
 		{
-			reverse = 0; 
+			reverse = 0;
 			cycles++;
 		}
 
-	} 
+		#ifdef WINDOWS
+		delay(EFFECTS_DELAY_IN_MILLISECONDS);
+		#endif
+	}
 	while(cycles < KITT_EFFECT_MAX_CYCLES);
+
+	send_signal(signal);
 }
 
 void perform_random_effect()
 {
 	const int RANDOM_EFFECT_MAX_CYCLES = 8;
-	
+
 	printl("Efecto Aleatorio");
-	
+
 	int cycles = 0;
-	
+
 	int signal = 0;
-	
+
 	do
 	{
 		signal = rand() % MAX_SIGNAL_VALUE + 1;
-		
+
 		send_signal(signal);
+
+		#ifdef WINDOWS
+		delay(EFFECTS_DELAY_IN_MILLISECONDS);
+		#endif
 	}
 	while(++cycles < RANDOM_EFFECT_MAX_CYCLES);
 }
 
 void perform_other_effect()
-{	
+{
 	printl("El Otro Efecto");
-	
-	const int X_EFFECT_MIN = 1;
-	const int X_EFFECT_MAX = 64;
-	const int X_EFFECT_MID = 8;
 
-	printl("Efecto X");
+	const int OTHER_EFFECT_MIN = 1;
+	const int OTHER_EFFECT_MAX = 64;
+	const int OTHER_EFFECT_MID = 8;
 
 	int signal = 0;
 
-	int a = X_EFFECT_MIN;
-	int b = X_EFFECT_MAX;
-
-	int half_cycles = 0;
+	int a = OTHER_EFFECT_MIN;
+	int b = OTHER_EFFECT_MAX;
 
 	do
 	{
@@ -308,17 +329,21 @@ void perform_other_effect()
 
 		if (a == b)
 		{
-			signal = 8;
+			signal = OTHER_EFFECT_MID;
 			send_signal(signal);
 			break;
 		}
-			
+
 		send_signal(signal);
 
 		a = a << 1;
 		b = b >> 1;
-	} 
-	while (a <= X_EFFECT_MAX && b >= X_EFFECT_MIN);
+
+		#ifdef WINDOWS
+		delay(EFFECTS_MAX_DELAY_IN_MILLISECONDS);
+		#endif
+	}
+	while (a <= OTHER_EFFECT_MAX && b >= OTHER_EFFECT_MIN);
 }
 
 void send_signal(const int signal)
