@@ -239,7 +239,6 @@ void perform_kitt_effect()
 	const int KITT_EFFECT_MIN_SIGNAL_VALUE = 1;
 	const int KITT_EFFECT_MAX_CYCLES = 3;
 	
-
 	printl("Efecto KITT (El auto fantastico)");
 
 	int signal  = 1;
@@ -287,8 +286,39 @@ void perform_random_effect()
 }
 
 void perform_other_effect()
-{
+{	
 	printl("El Otro Efecto");
+	
+	const int X_EFFECT_MIN = 1;
+	const int X_EFFECT_MAX = 64;
+	const int X_EFFECT_MID = 8;
+
+	printl("Efecto X");
+
+	int signal = 0;
+
+	int a = X_EFFECT_MIN;
+	int b = X_EFFECT_MAX;
+
+	int half_cycles = 0;
+
+	do
+	{
+		signal = a | b;
+
+		if (a == b)
+		{
+			signal = 8;
+			send_signal(signal);
+			break;
+		}
+			
+		send_signal(signal);
+
+		a = a << 1;
+		b = b >> 1;
+	} 
+	while (a <= X_EFFECT_MAX && b >= X_EFFECT_MIN);
 }
 
 void send_signal(const int signal)
