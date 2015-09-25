@@ -1,5 +1,6 @@
 #include <stdio.h>
-
+#include <stdlib.h>
+#include <time.h>
 #ifdef WINDOWS
 #include <conio.h>
 #include <dos.h>
@@ -69,6 +70,8 @@ void pre_init()
 	#ifdef WINDOWS
 	clrscr();
 	#endif
+	
+	srand( time( NULL ));
 }
 
 void print_menu()
@@ -266,7 +269,21 @@ void perform_kitt_effect()
 
 void perform_random_effect()
 {
+	const int RANDOM_EFFECT_MAX_CYCLES = 8;
+	
 	printl("Efecto Aleatorio");
+	
+	int cycles = 0;
+	
+	int signal = 0;
+	
+	do
+	{
+		signal = rand() % MAX_SIGNAL_VALUE + 1;
+		
+		send_signal(signal);
+	}
+	while(++cycles < RANDOM_EFFECT_MAX_CYCLES);
 }
 
 void perform_other_effect()
