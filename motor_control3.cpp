@@ -1,4 +1,18 @@
+/*
+			1	2	4	8	16	32
+			D0	D1	D2	D3	D4	D5		DECIMAL
+			EN1	IA	IB	EN2	IC	ID
+MOTOR_1	TL	1	1	0	0	0	0			3
+MOTOR_1 TR	1	0	1	0	0	0			5
+MOTOR_2 TL	0	0	0	1	1	0			24
+MOTOR_2 TR	0	0	0	1	0	1			40
+MOTOR_B TL	1	1	0	1	1	0			27
+MOTOR_B TR	1	0	1	1	0	1			45
+*/
+
 #include <stdio.h>
+#include <dos.h>
+#include <conio.h>
 
 #define MOTOR_1_TURN_RIGHT_LOW_SPEED 1
 #define MOTOR_1_TURN_RIGHT_MID_SPEED 2
@@ -32,13 +46,13 @@
 #define MOTOR_2_TURN_RIGHT 16
 
 
-#define MAX_VALUE 10
+#define MAX_VALUE 100
 
 #define LOW 0.25
 #define MID 0.5
 #define HIGH 0.75
 
-#define PORT_ADDR 0x278
+#define PORT_ADDR 0x378
 
 void print_menu();
 int get_command();
@@ -49,8 +63,6 @@ void send_signal(int port_addr, int signal);
 int main()
 {
 	int exit = 0;
-	int unrecognized_option = 0;
-
 	int command = 0;
 
 	int speed = 0;
@@ -61,7 +73,7 @@ int main()
 	while(exit == 0)
 	{
 		print_menu();
-		
+
 		command = get_command();
 
 		if (command == -1)
@@ -75,8 +87,6 @@ int main()
 			printf("Signal: %d, Speed: %d\n", signal, speed);
 
 			send_signal_with_delay(signal, speed);
-
-			exit = 1;
 		}
 	}
 
@@ -85,6 +95,7 @@ int main()
 
 void print_menu()
 {
+	//clrscr();
 	printf("MENU\n");
 	printf("1) Motor 1 Girar DERECHA Velocidad BAJA\n");
 	printf("2) Motor 1 Girar DERECHA Velocidad MEDIA\n");
@@ -107,7 +118,7 @@ void print_menu()
 	printf("17) Motor 1 y 2 Girar IZQUIERDA Velocidad MEDIA\n");
 	printf("18) Motor 1 y 2 Girar IZQUIERDA Velocidad ALTA\n");
 
-	printf("19) SALIR\n");
+	printf("e) SALIR\n");
 }
 
 int get_command()
@@ -120,14 +131,17 @@ int get_command()
 }
 
 
-void send_signal_with_delay(int signal, int delay)
+void send_signal_with_delay(int signal, int delay_ms)
 {
-	//KBHIT code
-	send_signal(PORT_ADDR, signal);
-	//wait delay
-	send_signal(PORT_ADDR, 0);
-	//wait MAX_VALUE - delay
-	
+	while(kbhit() == 0)
+	{
+		//printf(".");
+		send_signal(PORT_ADDR, signal);
+		delay(delay_ms);
+		//printf("-");
+		send_signal(PORT_ADDR, 0);
+		delay(MAX_VALUE - delay_ms);
+	}
 }
 
 int get_signal_from_command(int command, int *speed)
@@ -222,5 +236,5 @@ int get_signal_from_command(int command, int *speed)
 
 void send_signal(int port_addr, int signal)
 {
-	//outportb code
+	outportb(port_addr, signal);
 }
